@@ -18,7 +18,7 @@ window.DESTINATIONS = [
     hotel: {
       name: "Paradisus by Meliá Gran Canaria – All Inclusive",
       location: "San Agustín",
-      image: "https://r-xx.bstatic.com/xdata/images/hotel/1200x630/928511478.jpg?k=0a19e5a07ae19d24a5d18cab3cb5bd357c34b0dd502e9538a0fa605fb0f360d2&o=",
+      image: "images/gran-canaria.webp",
       url: booking("es/hotel-es-paradisusgrancanaria", "2027-06-02", "2027-06-09"),
     },
     flights: [
@@ -36,7 +36,7 @@ window.DESTINATIONS = [
     hotel: {
       name: "Secrets Bahía Real Resort & Spa – Adults Only",
       location: "Corralejo",
-      image: "https://q-xx.bstatic.com/xdata/images/hotel/1200x630/464900354.jpg?k=b969b0731fd2b23b920a7d6acf59e5502706838fb904d8ebb76921850ef5fddc&o=",
+      image: "images/fuerteventura.webp",
       url: booking("es/secrets-bahia-real", "2027-06-01", "2027-06-08"),
     },
     flights: [
