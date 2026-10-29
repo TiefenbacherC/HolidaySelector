@@ -12,7 +12,7 @@ function gradient(d) {
 // Hotelbild – oder ein Platzhalter, wenn (noch) kein Hotel eingetragen ist
 // bzw. das Bild nicht geladen werden kann
 function thumbnail(d) {
-  const placeholder = `<div class="thumb placeholder" style="background:${gradient(d)}"><span>${d.emoji}</span><small>Hotel folgt</small></div>`;
+  const placeholder = `<div class="thumb placeholder" style="background:${gradient(d)}"><span>🏨</span><small>Hotel folgt</small></div>`;
   if (!d.hotel?.image) return placeholder;
   return `<img class="thumb" src="${d.hotel.image}" alt="${d.hotel.name}" loading="lazy"
     onerror="this.outerHTML = this.dataset.fallback" data-fallback='${placeholder}'>`;
@@ -48,9 +48,7 @@ function showInfo(d) {
   document.getElementById("info-content").innerHTML = `
     ${thumbnail(d)}
     <div class="info-body">
-      <p class="eyebrow">${d.country}</p>
-      <h2>${d.emoji} ${d.name}</h2>
-      <p>${d.description}</p>
+      <h2>${d.name}</h2>
       <p class="travel">📅 ${d.travelTime}</p>
       ${flights}
       ${hotel}
@@ -64,10 +62,7 @@ function showDestination(d, eyebrow) {
   card.style.background = gradient(d);
   card.innerHTML = `
     ${thumbnail(d)}
-    <div class="big-emoji">${d.emoji}</div>
-    <p class="country">${d.country}</p>
     <h2>${d.name}</h2>
-    <p>${d.description}</p>
     <p class="travel">📅 ${d.travelTime}</p>
     ${infoButton(d, "light")}
     <p class="cheer">Pack die Koffer! 🧳</p>`;
@@ -99,7 +94,7 @@ function startRandom() {
 
   function tick() {
     const d = destinations[i % destinations.length];
-    slot.textContent = `${d.emoji} ${d.name}`;
+    slot.textContent = d.name;
     i++;
     if (i <= spins) {
       delay *= 1.1;
@@ -118,9 +113,7 @@ function renderCards() {
       <div class="card" style="background:${gradient(d)}">
         ${thumbnail(d)}
         <div class="card-body">
-          <span class="country">${d.country}</span>
-          <span class="name">${d.emoji} ${d.name}</span>
-          <span class="desc">${d.description}</span>
+          <span class="name">${d.name}</span>
           <span class="travel">📅 ${d.travelTime}</span>
           <div class="card-actions">
             ${infoButton(d, "light")}

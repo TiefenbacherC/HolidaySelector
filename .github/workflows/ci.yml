@@ -1,0 +1,28 @@
+name: CI
+
+# Prüft bei jedem Push, ob die Website baut und antwortet.
+# Ausgerollt wird vom Pi selbst: er holt sich neue Commits jede Minute (siehe pi-setup.sh).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skripte prüfen
+        run: bash -n holiday.sh && bash -n pi-setup.sh
+
+      - name: JavaScript prüfen
+        run: node --check site/app.js && node --check site/destinations.js
+
+      - name: Docker-Image bauen und testen
+        run: |
+          docker build -t holiday-selector .
+          docker run -d --name test -p 8080:80 holiday-selector
+          sleep 2
+          curl -fsS http://localhost:8080 | grep -q "Unser nächster Urlaub"
+          echo "Website antwortet ✔"

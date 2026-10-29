@@ -10,9 +10,6 @@ function booking(path, checkin = "2027-06-08", checkout = "2027-06-13") {
 window.DESTINATIONS = [
   {
     name: "Gran Canaria",
-    country: "Kanarische Inseln",
-    emoji: "🏝️",
-    description: "Dünen von Maspalomas, Sonne satt und der Atlantik direkt vor der Tür.",
     travelTime: "2.–9. Juni 2027 · 7 Nächte",
     colors: ["#ffb347", "#ff6f61"],
     hotel: {
@@ -28,9 +25,6 @@ window.DESTINATIONS = [
   },
   {
     name: "Fuerteventura",
-    country: "Kanarische Inseln",
-    emoji: "🏄",
-    description: "Endlose weiße Strände, türkises Wasser und ganz viel Ruhe.",
     travelTime: "1.–8. Juni 2027 · 7 Nächte",
     colors: ["#4facfe", "#00c6a7"],
     hotel: {
@@ -46,9 +40,6 @@ window.DESTINATIONS = [
   },
   {
     name: "Lanzarote",
-    country: "Kanarische Inseln",
-    emoji: "🌋",
-    description: "Vulkanlandschaften, schwarze Strände und Kunst von César Manrique.",
     travelTime: "Reisezeit folgt",
     colors: ["#f7797d", "#7b61ff"],
     hotel: {
@@ -60,9 +51,6 @@ window.DESTINATIONS = [
   },
   {
     name: "Sizilien",
-    country: "Italien",
-    emoji: "🍋",
-    description: "Barocke Städte, der Ätna, Cannoli und Granita – Dolce Vita am Mittelmeer.",
     travelTime: "Reisezeit folgt",
     colors: ["#43e97b", "#2a9d8f"],
     hotel: {

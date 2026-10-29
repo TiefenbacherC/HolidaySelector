@@ -2,70 +2,57 @@
 
 Eine kleine Website, auf der meine Freundin unseren nächsten Urlaub auswählt:
 
-- **🎲 Zufall** – eines der drei Reiseziele wird zufällig gezogen
-- **🗺️ Reiseziel wählen** – sie sucht sich eines der drei selbst aus
+- **🎲 Zufall** – eines der Reiseziele wird zufällig gezogen
+- **🗺️ Reiseziel wählen** – sie sucht sich selbst eines aus
 - **🎁 Überraschung** – sie erfährt das Ziel gar nicht
 
-Die Reiseziele stehen in [`site/destinations.js`](site/destinations.js).
+Die Reiseziele (Hotel, Bild, Reisezeit, Flüge) stehen in [`site/destinations.js`](site/destinations.js),
+eigene Bilder liegen in `site/images/`.
 
 ## Wie das Deployment funktioniert
 
-Bei jedem Push auf `main` startet die GitHub Action [`deploy.yml`](.github/workflows/deploy.yml).
-Sie läuft auf einem **Self-hosted Runner direkt auf dem Raspberry Pi**, baut dort ein kleines
-nginx-Docker-Image und startet den Container neu. Der Pi muss dafür nicht aus dem Internet
-erreichbar sein – der Runner verbindet sich selbst zu GitHub.
+- **CI:** Bei jedem Push prüft die GitHub Action [`ci.yml`](.github/workflows/ci.yml), ob die Skripte
+  gültig sind, das Docker-Image baut und die Website antwortet.
+- **CD:** Der Raspberry Pi holt sich Updates selbst. Ein systemd-Timer ruft jede Minute
+  `holiday.sh update` auf: Gibt es neue Commits auf `main`, zieht der Pi sie, baut das
+  nginx-Docker-Image neu und startet die Website neu. Der Pi muss dafür nicht aus dem Internet
+  erreichbar sein, und es braucht keinen GitHub-Runner.
+
+Ein Push ist also spätestens nach etwa einer Minute live.
 
 ## Einmalige Einrichtung am Pi
 
-### 1. Docker installieren
+Per SSH am Pi anmelden und diesen einen Befehl ausführen:
 
 ```bash
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
+curl -fsSL https://raw.githubusercontent.com/TiefenbacherC/HolidaySelector/main/pi-setup.sh | bash
 ```
 
-Danach einmal ab- und wieder anmelden.
-
-### 2. GitHub Runner installieren
-
-Auf GitHub: **Repo → Settings → Actions → Runners → New self-hosted runner → Linux / ARM64**
-(bzw. ARM bei 32-bit Raspberry Pi OS). Die dort angezeigten Befehle am Pi ausführen
-(`mkdir actions-runner && cd actions-runner`, Download, `./config.sh --url … --token …`).
-
-Danach den Runner als Dienst einrichten, damit er nach einem Neustart automatisch läuft:
-
-```bash
-cd ~/actions-runner
-sudo ./svc.sh install
-sudo ./svc.sh start
-```
-
-### 3. Ersten Deploy auslösen
-
-Einfach auf `main` pushen – oder auf GitHub unter **Actions → Deploy auf den Pi → Run workflow**.
-
-### 4. Kurzbefehl `urlaub` anlegen
-
-```bash
-chmod +x ~/actions-runner/_work/HolidaySelector/HolidaySelector/holiday.sh
-sudo ln -sf ~/actions-runner/_work/HolidaySelector/HolidaySelector/holiday.sh /usr/local/bin/urlaub
-```
+Das Skript [`pi-setup.sh`](pi-setup.sh) installiert Docker und git (falls nötig), klont das Repo
+nach `~/HolidaySelector`, legt den Befehl `urlaub` an, richtet das Auto-Update ein und startet
+die Website. Es kann gefahrlos mehrmals ausgeführt werden.
 
 ## Starten & Stoppen
 
 ```bash
 urlaub start     # Website starten
 urlaub stop      # Website stoppen
-urlaub status    # läuft sie gerade?
+urlaub status    # läuft sie gerade? welcher Stand?
 urlaub restart
 urlaub logs
+urlaub update    # sofort nach Updates schauen, statt auf den Timer zu warten
 ```
 
 Die Website ist dann unter `http://<IP-vom-Pi>:8080` erreichbar.
-Anderer Port? `PORT=80 urlaub start` (und in der Action `env: PORT: 80` setzen).
 
-> Hinweis: Ein Push startet die Website automatisch neu – auch wenn sie vorher mit
-> `urlaub stop` gestoppt wurde.
+Mit `urlaub stop` gestoppt bleibt gestoppt: Updates bauen dann nur das Image neu, und beim
+nächsten `urlaub start` läuft sofort der neueste Stand.
+
+Was das Auto-Update gemacht hat, zeigt:
+
+```bash
+journalctl -u holiday-update -n 20
+```
 
 ## Lokal ansehen
 
