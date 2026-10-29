@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Auswertung</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="result-page">
+    <p class="eyebrow">Auswertung</p>
+    <h1>Was hat sie gewählt?</h1>
+
+    <div id="latest" class="latest"></div>
+
+    <h2>Übersicht</h2>
+    <div id="summary" class="summary"></div>
+
+    <h2>Verlauf</h2>
+    <div class="history-wrap">
+      <table class="history">
+        <thead><tr><th>Wann</th><th>Wie</th><th>Ergebnis</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+
+    <p class="footer">
+      <button class="link" id="reset">Verlauf löschen</button>
+      · <span id="version"></span>
+    </p>
+  </main>
+
+  <script src="/destinations.js"></script>
+  <script src="/result.js"></script>
+</body>
+</html>

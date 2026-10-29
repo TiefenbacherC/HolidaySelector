@@ -56,7 +56,17 @@ function showInfo(d) {
   document.getElementById("info").showModal();
 }
 
-function showDestination(d, eyebrow) {
+// Auswahl speichern, damit sie unter /result ausgewertet werden kann
+function record(mode, d) {
+  fetch("/api/choice", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode, destination: d ? d.name : null }),
+  }).catch(() => {});
+}
+
+function showDestination(d, mode, eyebrow) {
+  record(mode, d);
   document.getElementById("result-eyebrow").textContent = eyebrow;
   const card = document.getElementById("result-card");
   card.style.background = gradient(d);
@@ -71,6 +81,7 @@ function showDestination(d, eyebrow) {
 }
 
 function showSurprise() {
+  record("surprise", null);
   document.getElementById("result-eyebrow").textContent = "Überraschung";
   const card = document.getElementById("result-card");
   card.style.background = "linear-gradient(135deg, #f093fb, #f5576c)";
@@ -100,7 +111,7 @@ function startRandom() {
       delay *= 1.1;
       setTimeout(tick, delay);
     } else {
-      setTimeout(() => showDestination(pick, "Der Zufall hat entschieden"), 700);
+      setTimeout(() => showDestination(pick, "random", "Der Zufall hat entschieden"), 700);
     }
   }
   tick();
@@ -150,7 +161,7 @@ document.addEventListener("click", (e) => {
   if (action === "surprise") showSurprise();
   if (action === "home") show("home");
   if (action === "info") showInfo(d);
-  if (action === "pick") showDestination(d, "Deine Wahl");
+  if (action === "pick") showDestination(d, "choose", "Deine Wahl");
   if (action === "close-info") infoDialog.close();
 });
 

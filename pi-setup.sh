@@ -3,8 +3,8 @@
 #   curl -fsSL https://raw.githubusercontent.com/TiefenbacherC/HolidaySelector/main/pi-setup.sh | bash
 #
 # Installiert Docker und git, klont das Repo nach ~/HolidaySelector, legt den Befehl
-# "urlaub" an, startet die Website und richtet das Auto-Update ein: ein systemd-Timer
-# schaut jede Minute auf GitHub nach neuen Commits und rollt sie aus.
+# "urlaub" an, startet das neueste Release und richtet das Auto-Update ein: ein systemd-Timer
+# schaut jede Minute auf GitHub nach einem neuen Release und rollt es aus.
 set -euo pipefail
 
 REPO="https://github.com/TiefenbacherC/HolidaySelector.git"
@@ -23,8 +23,7 @@ sudo usermod -aG docker "$USER_NAME"
 
 echo "==> Repo holen"
 if [ -d "$DIR/.git" ]; then
-  git -C "$DIR" fetch -q origin main
-  git -C "$DIR" reset -q --hard origin/main
+  git -C "$DIR" fetch -q --tags --force origin
 else
   git clone -q "$REPO" "$DIR"
 fi
@@ -62,10 +61,11 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable --now holiday-update.timer
 
-echo "==> Website starten"
-sudo "$DIR/holiday.sh" deploy
+echo "==> Neuestes Release ausrollen und Website starten"
+# sg: die frisch hinzugefügte docker-Gruppe gilt in dieser Sitzung sonst noch nicht
+sg docker -c "$DIR/holiday.sh update" || true
+sg docker -c "$DIR/holiday.sh deploy"
 
 echo
-echo "Fertig! Ab jetzt aktualisiert sich die Website automatisch bei jedem Push auf main."
+echo "Fertig! Ab jetzt aktualisiert sich die Website automatisch bei jedem neuen GitHub-Release."
 echo "Befehle: urlaub start | stop | status | logs"
-echo "(Nach dem nächsten Ab- und Anmelden geht 'urlaub' auch ohne sudo.)"

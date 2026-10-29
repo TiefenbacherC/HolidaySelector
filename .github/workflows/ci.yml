@@ -1,11 +1,12 @@
 name: CI
 
-# Prüft bei jedem Push, ob die Website baut und antwortet.
-# Ausgerollt wird vom Pi selbst: er holt sich neue Commits jede Minute (siehe pi-setup.sh).
+# Prüft bei jedem Push, ob die Website baut und funktioniert.
+# Ausgerollt wird nur, was als Release veröffentlicht ist (siehe release.yml).
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
 
 jobs:
   build:
@@ -14,15 +15,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Skripte prüfen
-        run: bash -n holiday.sh && bash -n pi-setup.sh
+        run: bash -n holiday.sh && bash -n pi-setup.sh && bash -n release.sh
 
       - name: JavaScript prüfen
-        run: node --check site/app.js && node --check site/destinations.js
+        run: for f in server.js site/*.js; do node --check "$f"; done
 
       - name: Docker-Image bauen und testen
         run: |
-          docker build -t holiday-selector .
-          docker run -d --name test -p 8080:80 holiday-selector
+          docker build --build-arg VERSION=ci -t holiday-selector .
+          docker run -d --name test -p 8080:8080 holiday-selector
           sleep 2
-          curl -fsS http://localhost:8080 | grep -q "Unser nächster Urlaub"
-          echo "Website antwortet ✔"
+          curl -fsS http://localhost:8080/ | grep -q "Unser nächster Urlaub"
+          curl -fsS http://localhost:8080/result | grep -q "Auswertung"
+          curl -fsS -X POST -H "Content-Type: application/json" \
+            -d '{"mode":"choose","destination":"Lanzarote"}' http://localhost:8080/api/choice
+          curl -fsS http://localhost:8080/api/choices | grep -q '"destination":"Lanzarote"'
+          echo "Website und Auswertung funktionieren ✔"
+
+      - name: Logs bei Fehler
+        if: failure()
+        run: docker logs test || true
