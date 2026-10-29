@@ -57,10 +57,12 @@ urlaub stop      # Website stoppen
 urlaub status    # läuft sie gerade? welche Version?
 urlaub restart
 urlaub logs
+urlaub port 80   # Port dauerhaft ändern (ohne Zahl: aktuellen Port anzeigen)
 urlaub update    # sofort nach einem neuen Release schauen, statt auf den Timer zu warten
 ```
 
-Die Website ist dann unter `http://<IP-vom-Pi>:8080` erreichbar.
+Die Website ist dann unter `http://<IP-vom-Pi>:8080` erreichbar (Standard-Port 8080). Ein mit
+`urlaub port` gesetzter Port wird gespeichert und bleibt auch bei Updates erhalten.
 
 Mit `urlaub stop` gestoppt bleibt gestoppt: Updates bauen dann nur das Image neu, und beim
 nächsten `urlaub start` läuft sofort der neueste Stand.

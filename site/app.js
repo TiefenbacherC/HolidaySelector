@@ -22,6 +22,56 @@ function infoButton(d, cls = "") {
   return `<button class="btn ${cls}" data-action="info" data-index="${destinations.indexOf(d)}">ℹ️ Infos</button>`;
 }
 
+// Bildergalerie fürs Info-Fenster: Hauptbild + hotel.gallery, durchblättern per
+// Pfeil, Wischen (scroll-snap) oder Pfeiltasten. Bilder, die nicht laden, fliegen raus.
+function gallery(d) {
+  const images = [...new Set([d.hotel?.image, ...(d.hotel?.gallery ?? [])].filter(Boolean))];
+  if (images.length < 2) return thumbnail(d);
+  return `
+    <div class="gallery">
+      <div class="gallery-track">
+        ${images
+          .map(
+            (src, i) => `<img src="${src}" alt="${d.hotel.name} – Bild ${i + 1}"
+              loading="${i === 0 ? "eager" : "lazy"}" onerror="this.remove(); updateGallery()">`
+          )
+          .join("")}
+      </div>
+      <button class="gallery-nav prev" data-action="gallery" data-step="-1" aria-label="Vorheriges Bild">‹</button>
+      <button class="gallery-nav next" data-action="gallery" data-step="1" aria-label="Nächstes Bild">›</button>
+      <span class="gallery-count"></span>
+    </div>`;
+}
+
+function galleryTrack() {
+  return document.querySelector("#info .gallery-track");
+}
+
+function updateGallery() {
+  const track = galleryTrack();
+  if (!track) return;
+  const count = track.children.length;
+  const index = Math.round(track.scrollLeft / track.clientWidth);
+  track.parentElement.querySelector(".gallery-count").textContent = `${index + 1} / ${count}`;
+  track.parentElement.querySelector(".prev").disabled = index === 0;
+  track.parentElement.querySelector(".next").disabled = index >= count - 1;
+}
+
+// Zielbild merken, damit schnelles Mehrfachklicken auch mehrere Bilder weiterblättert
+let galleryTarget = 0;
+
+function stepGallery(step) {
+  const track = galleryTrack();
+  if (!track) return;
+  const current = Math.round(track.scrollLeft / track.clientWidth);
+  const from = track.dataset.scrolling ? galleryTarget : current;
+  galleryTarget = Math.max(0, Math.min(track.children.length - 1, from + step));
+  track.dataset.scrolling = "1";
+  track.scrollTo({ left: galleryTarget * track.clientWidth, behavior: "smooth" });
+  clearTimeout(stepGallery.timer);
+  stepGallery.timer = setTimeout(() => delete track.dataset.scrolling, 600);
+}
+
 function showInfo(d) {
   const hotel = d.hotel
     ? `<h3>🏨 ${d.hotel.name}</h3>
@@ -46,14 +96,17 @@ function showInfo(d) {
     : "";
 
   document.getElementById("info-content").innerHTML = `
-    ${thumbnail(d)}
+    ${gallery(d)}
     <div class="info-body">
+      ${d.country ? `<p class="eyebrow">${d.country}</p>` : ""}
       <h2>${d.name}</h2>
       <p class="travel">📅 ${d.travelTime}</p>
       ${flights}
       ${hotel}
     </div>`;
   document.getElementById("info").showModal();
+  galleryTrack()?.addEventListener("scroll", updateGallery, { passive: true });
+  updateGallery();
 }
 
 const EYEBROWS = {
@@ -186,11 +239,17 @@ document.addEventListener("click", (e) => {
   if (action === "info") showInfo(d);
   if (action === "pick") choose("choose", d);
   if (action === "close-info") infoDialog.close();
+  if (action === "gallery") stepGallery(Number(el.dataset.step));
 });
 
 // Klick neben das Info-Fenster schließt es
 infoDialog.addEventListener("click", (e) => {
   if (e.target === infoDialog) infoDialog.close();
+});
+
+infoDialog.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") stepGallery(-1);
+  if (e.key === "ArrowRight") stepGallery(1);
 });
 
 renderCards();

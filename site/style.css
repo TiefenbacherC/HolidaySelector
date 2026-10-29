@@ -303,3 +303,50 @@ body:not(.ready) main:not(.result-page) { visibility: hidden; }
 [hidden] { display: none !important; }
 .reset-row { text-align: center; margin: 16px 0 0; }
 .latest:has(> .muted) { box-shadow: none; padding: 16px; }
+
+/* Bildergalerie im Info-Fenster */
+.gallery { position: relative; }
+.gallery-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.gallery-track::-webkit-scrollbar { display: none; }
+.gallery-track img {
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  scroll-snap-align: start;
+  background: rgba(127, 127, 127, 0.15);
+}
+.gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+.gallery-nav:disabled { opacity: 0; pointer-events: none; }
+.gallery-nav.prev { left: 12px; }
+.gallery-nav.next { right: 12px; }
+.gallery-count {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.info-body .eyebrow { margin-bottom: 4px; }

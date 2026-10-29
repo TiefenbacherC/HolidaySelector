@@ -5,6 +5,7 @@
 #   ./holiday.sh restart  – neu starten
 #   ./holiday.sh status   – läuft sie? welche Version?
 #   ./holiday.sh logs     – Logs anzeigen
+#   ./holiday.sh port 80  – Port dauerhaft ändern (ohne Zahl: aktuellen Port anzeigen)
 #   ./holiday.sh deploy   – neu bauen und starten
 #   ./holiday.sh update   – neuestes GitHub-Release holen und ausrollen
 #                           (läuft jede Minute automatisch, siehe pi-setup.sh)
@@ -13,9 +14,11 @@ set -euo pipefail
 NAME="holiday-selector"
 IMAGE="holiday-selector:latest"
 VOLUME="holiday-data"
-PORT="${PORT:-8080}"
 REPO="TiefenbacherC/HolidaySelector"
 DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+# gespeicherter Port (urlaub port …) – liegt nicht in git, bleibt also bei Updates erhalten
+PORT_FILE="$DIR/.port"
+PORT="${PORT:-$(cat "$PORT_FILE" 2>/dev/null || echo 8080)}"
 
 # git im Repo – auch wenn das Skript per sudo läuft
 g() {
@@ -98,8 +101,25 @@ main() {
     logs)
       docker logs -f "$NAME"
       ;;
+    port)
+      local new="${2:-}"
+      if [ -z "$new" ]; then
+        echo "Port: $PORT"
+        exit 0
+      fi
+      if ! [[ "$new" =~ ^[0-9]+$ ]] || [ "$new" -lt 1 ] || [ "$new" -gt 65535 ]; then
+        echo "Ungültiger Port: $new (erlaubt: 1–65535)" >&2
+        exit 1
+      fi
+      echo "$new" > "$PORT_FILE"
+      PORT="$new"
+      echo "Port auf $PORT gesetzt."
+      if running; then
+        run
+      fi
+      ;;
     *)
-      echo "Verwendung: $0 {start|stop|restart|status|logs|deploy|update}"
+      echo "Verwendung: $0 {start|stop|restart|status|logs|port [nummer]|deploy|update}"
       exit 1
       ;;
   esac
