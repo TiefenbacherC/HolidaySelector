@@ -29,6 +29,22 @@ function showInfo(d) {
        <a class="btn primary" href="${d.hotel.url}" target="_blank" rel="noopener">Hotel auf Booking.com ansehen ↗</a>`
     : `<h3>🏨 Hotel</h3><p class="muted">Wird noch verraten …</p>`;
 
+  const flights = d.flights
+    ? `<h3>✈️ Flüge</h3>
+       <ul class="flights">
+         ${d.flights
+           .map(
+             (f) => `<li>
+               <span class="flight-label">${f.label} · ${f.date}</span>
+               <strong>${f.route}</strong>
+               <span>${f.time}</span>
+               <small class="muted">${f.flight}</small>
+             </li>`
+           )
+           .join("")}
+       </ul>`
+    : "";
+
   document.getElementById("info-content").innerHTML = `
     ${thumbnail(d)}
     <div class="info-body">
@@ -36,6 +52,7 @@ function showInfo(d) {
       <h2>${d.emoji} ${d.name}</h2>
       <p>${d.description}</p>
       <p class="travel">📅 ${d.travelTime}</p>
+      ${flights}
       ${hotel}
     </div>`;
   document.getElementById("info").showModal();

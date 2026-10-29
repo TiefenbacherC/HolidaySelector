@@ -1,5 +1,6 @@
 // Die Reiseziele – hier einfach anpassen, pushen, fertig.
 // hotel: null  → es wird ein Hotel-Platzhalter angezeigt
+// flights      → optional, wird im Info-Fenster angezeigt
 
 // Booking zeigt ohne Reisedaten eine Fehlerseite, daher hängen sie an jedem Hotel-Link
 function booking(path, checkin = "2027-06-08", checkout = "2027-06-13") {
@@ -12,28 +13,36 @@ window.DESTINATIONS = [
     country: "Kanarische Inseln",
     emoji: "🏝️",
     description: "Dünen von Maspalomas, Sonne satt und der Atlantik direkt vor der Tür.",
-    travelTime: "Reisezeit folgt",
+    travelTime: "2.–9. Juni 2027 · 7 Nächte",
     colors: ["#ffb347", "#ff6f61"],
     hotel: {
       name: "Paradisus by Meliá Gran Canaria – All Inclusive",
       location: "San Agustín",
       image: "https://r-xx.bstatic.com/xdata/images/hotel/1200x630/928511478.jpg?k=0a19e5a07ae19d24a5d18cab3cb5bd357c34b0dd502e9538a0fa605fb0f360d2&o=",
-      url: booking("es/hotel-es-paradisusgrancanaria"),
+      url: booking("es/hotel-es-paradisusgrancanaria", "2027-06-02", "2027-06-09"),
     },
+    flights: [
+      { label: "Hinflug", date: "Mi, 2. Juni", route: "München → Gran Canaria", time: "12:10 – 16:05", flight: "Condor 1522 · Nonstop" },
+      { label: "Rückflug", date: "Mi, 9. Juni", route: "Gran Canaria → München", time: "17:05 – 22:30", flight: "Condor 1523 · Nonstop" },
+    ],
   },
   {
     name: "Fuerteventura",
     country: "Kanarische Inseln",
     emoji: "🏄",
     description: "Endlose weiße Strände, türkises Wasser und ganz viel Ruhe.",
-    travelTime: "Reisezeit folgt",
+    travelTime: "1.–8. Juni 2027 · 7 Nächte",
     colors: ["#4facfe", "#00c6a7"],
     hotel: {
       name: "Secrets Bahía Real Resort & Spa – Adults Only",
       location: "Corralejo",
       image: "https://q-xx.bstatic.com/xdata/images/hotel/1200x630/464900354.jpg?k=b969b0731fd2b23b920a7d6acf59e5502706838fb904d8ebb76921850ef5fddc&o=",
-      url: booking("es/secrets-bahia-real"),
+      url: booking("es/secrets-bahia-real", "2027-06-01", "2027-06-08"),
     },
+    flights: [
+      { label: "Hinflug", date: "Di, 1. Juni", route: "München → Fuerteventura", time: "6:00 – 9:40", flight: "Condor 1412 · Nonstop" },
+      { label: "Rückflug", date: "Di, 8. Juni", route: "Fuerteventura → München", time: "10:35 – 15:55", flight: "Condor 1413 · Nonstop" },
+    ],
   },
   {
     name: "Lanzarote",
