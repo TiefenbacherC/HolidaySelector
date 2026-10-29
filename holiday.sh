@@ -30,9 +30,10 @@ version() {
 }
 
 # Tag des neuesten veröffentlichten Releases – über die Weiterleitung von
-# github.com/…/releases/latest, damit es kein API-Limit gibt
+# github.com/…/releases/latest, damit es kein API-Limit gibt. Der Zeitstempel
+# umgeht GitHubs Zwischenspeicher, der sonst noch minutenlang das alte Release liefert.
 latest_release() {
-  curl -fsSI "https://github.com/$REPO/releases/latest" \
+  curl -fsSI -H "Cache-Control: no-cache" "https://github.com/$REPO/releases/latest?t=$(date +%s)" \
     | tr -d '\r' | awk 'tolower($1) == "location:" { print $2 }' \
     | grep -o '/releases/tag/.*' | sed 's#/releases/tag/##' || true
 }
