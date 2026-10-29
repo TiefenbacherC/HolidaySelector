@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unser nächster Urlaub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <!-- Startseite -->
+    <section id="home" class="screen active">
+      <p class="eyebrow">Für dich ❤️</p>
+      <h1>Wohin geht unser nächster Urlaub?</h1>
+      <p class="lead">Du entscheidest. Wie möchtest du wählen?</p>
+      <div class="options">
+        <button class="option" data-action="random">
+          <span class="icon">🎲</span>
+          <span class="title">Zufall</span>
+          <span class="hint">Das Schicksal wählt eines der Reiseziele</span>
+        </button>
+        <button class="option" data-action="choose">
+          <span class="icon">🗺️</span>
+          <span class="title">Reiseziel wählen</span>
+          <span class="hint">Du suchst dir selbst eines aus</span>
+        </button>
+        <button class="option" data-action="surprise">
+          <span class="icon">🎁</span>
+          <span class="title">Überraschung</span>
+          <span class="hint">Du erfährst es erst, wenn's losgeht</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Zufall -->
+    <section id="random" class="screen">
+      <p class="eyebrow">Zufall</p>
+      <h2>Die Würfel rollen …</h2>
+      <div class="slot"><div id="slot-text" class="slot-text">🎲</div></div>
+    </section>
+
+    <!-- Auswahl -->
+    <section id="choose" class="screen">
+      <p class="eyebrow">Reiseziel wählen</p>
+      <h2>Wohin soll's gehen?</h2>
+      <div id="cards" class="cards"></div>
+      <button class="link" data-action="home">← zurück</button>
+    </section>
+
+    <!-- Ergebnis -->
+    <section id="result" class="screen">
+      <p class="eyebrow" id="result-eyebrow"></p>
+      <div id="result-card" class="result-card"></div>
+      <button class="link" data-action="home">Nochmal von vorne</button>
+    </section>
+  </main>
+
+  <div id="confetti" aria-hidden="true"></div>
+
+  <script src="destinations.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
