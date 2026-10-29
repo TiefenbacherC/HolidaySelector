@@ -35,6 +35,13 @@ function saveChoices(choices) {
   fs.renameSync(DATA_FILE + ".tmp", DATA_FILE);
 }
 
+// Es gilt immer nur eine Auswahl – bis sie unter /result zurückgesetzt wird.
+// Zurücksetzen hängt einen "reset"-Eintrag an, damit der Verlauf erhalten bleibt.
+function currentChoice(choices) {
+  const last = choices[choices.length - 1];
+  return last && last.mode !== "reset" ? last : null;
+}
+
 function json(res, status, body) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
   res.end(JSON.stringify(body));
@@ -54,7 +61,21 @@ function readBody(req) {
 
 async function handleApi(req, res, url) {
   if (url === "/api/choices" && req.method === "GET") {
-    return json(res, 200, { version: VERSION, choices: loadChoices() });
+    const choices = loadChoices();
+    return json(res, 200, { version: VERSION, current: currentChoice(choices), choices });
+  }
+
+  if (url === "/api/choice" && req.method === "GET") {
+    return json(res, 200, { choice: currentChoice(loadChoices()) });
+  }
+
+  if (url === "/api/choice" && req.method === "DELETE") {
+    const choices = loadChoices();
+    if (currentChoice(choices)) {
+      choices.push({ time: new Date().toISOString(), mode: "reset", destination: null });
+      saveChoices(choices);
+    }
+    return json(res, 200, { ok: true });
   }
 
   if (url === "/api/choices" && req.method === "DELETE") {
@@ -74,9 +95,14 @@ async function handleApi(req, res, url) {
       return json(res, 400, { error: "Ungültige Auswahl" });
     }
     const choices = loadChoices();
-    choices.push({ time: new Date().toISOString(), mode: data.mode, destination });
+    const current = currentChoice(choices);
+    if (current) {
+      return json(res, 409, { error: "Es wurde bereits gewählt", choice: current });
+    }
+    const choice = { time: new Date().toISOString(), mode: data.mode, destination };
+    choices.push(choice);
     saveChoices(choices);
-    return json(res, 201, { ok: true });
+    return json(res, 201, { choice });
   }
 
   json(res, 404, { error: "Nicht gefunden" });

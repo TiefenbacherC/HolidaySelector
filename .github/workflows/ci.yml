@@ -27,10 +27,16 @@ jobs:
           sleep 2
           curl -fsS http://localhost:8080/ | grep -q "Unser nächster Urlaub"
           curl -fsS http://localhost:8080/result | grep -q "Auswertung"
-          curl -fsS -X POST -H "Content-Type: application/json" \
-            -d '{"mode":"choose","destination":"Lanzarote"}' http://localhost:8080/api/choice
-          curl -fsS http://localhost:8080/api/choices | grep -q '"destination":"Lanzarote"'
-          echo "Website und Auswertung funktionieren ✔"
+          post() { curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "$1" http://localhost:8080/api/choice; }
+          test "$(post '{"mode":"choose","destination":"Lanzarote"}')" = 201
+          # nur eine Auswahl erlaubt
+          test "$(post '{"mode":"surprise"}')" = 409
+          curl -fsS http://localhost:8080/api/choice | grep -q '"destination":"Lanzarote"'
+          # nach dem Zurücksetzen kann neu gewählt werden
+          curl -fsS -X DELETE http://localhost:8080/api/choice
+          curl -fsS http://localhost:8080/api/choice | grep -q '"choice":null'
+          test "$(post '{"mode":"surprise"}')" = 201
+          echo "Website, Auswahl-Sperre und Auswertung funktionieren ✔"
 
       - name: Logs bei Fehler
         if: failure()

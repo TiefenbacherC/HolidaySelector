@@ -56,17 +56,39 @@ function showInfo(d) {
   document.getElementById("info").showModal();
 }
 
-// Auswahl speichern, damit sie unter /result ausgewertet werden kann
-function record(mode, d) {
-  fetch("/api/choice", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode, destination: d ? d.name : null }),
-  }).catch(() => {});
+const EYEBROWS = {
+  random: "Der Zufall hat entschieden",
+  choose: "Deine Wahl",
+  surprise: "Überraschung",
+};
+
+// Auswahl speichern. Gewählt werden kann nur einmal – gibt es schon eine Auswahl,
+// liefert der Server die bestehende zurück, und die wird angezeigt.
+async function record(mode, d) {
+  const choice = { mode, destination: d ? d.name : null };
+  try {
+    const res = await fetch("/api/choice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(choice),
+    });
+    return (await res.json()).choice ?? choice;
+  } catch {
+    return choice;
+  }
 }
 
-function showDestination(d, mode, eyebrow) {
-  record(mode, d);
+function showChoice(choice, celebrate) {
+  if (choice.mode === "surprise") return showSurprise(celebrate);
+  const d = destinations.find((x) => x.name === choice.destination);
+  if (d) showDestination(d, EYEBROWS[choice.mode], celebrate);
+}
+
+async function choose(mode, d) {
+  showChoice(await record(mode, d), true);
+}
+
+function showDestination(d, eyebrow, celebrate) {
   document.getElementById("result-eyebrow").textContent = eyebrow;
   const card = document.getElementById("result-card");
   card.style.background = gradient(d);
@@ -77,12 +99,11 @@ function showDestination(d, mode, eyebrow) {
     ${infoButton(d, "light")}
     <p class="cheer">Pack die Koffer! 🧳</p>`;
   show("result");
-  confetti();
+  if (celebrate) confetti();
 }
 
-function showSurprise() {
-  record("surprise", null);
-  document.getElementById("result-eyebrow").textContent = "Überraschung";
+function showSurprise(celebrate) {
+  document.getElementById("result-eyebrow").textContent = EYEBROWS.surprise;
   const card = document.getElementById("result-card");
   card.style.background = "linear-gradient(135deg, #f093fb, #f5576c)";
   card.innerHTML = `
@@ -91,13 +112,15 @@ function showSurprise() {
     <p>Wohin es geht, bleibt mein Geheimnis – bis wir am Flughafen stehen.</p>
     <p class="cheer">Ich freu mich auf dich ❤️</p>`;
   show("result");
-  confetti();
+  if (celebrate) confetti();
 }
 
 function startRandom() {
   show("random");
   const slot = document.getElementById("slot-text");
   const pick = destinations[Math.floor(Math.random() * destinations.length)];
+  // sofort speichern – Neuladen während der Animation bringt also kein neues Ergebnis
+  const saved = record("random", pick);
   // ein paar volle Runden, damit die Anzeige am Ende genau auf "pick" stehen bleibt
   const spins = destinations.length * 6 + destinations.indexOf(pick);
   let i = 0;
@@ -111,7 +134,7 @@ function startRandom() {
       delay *= 1.1;
       setTimeout(tick, delay);
     } else {
-      setTimeout(() => showDestination(pick, "random", "Der Zufall hat entschieden"), 700);
+      setTimeout(() => saved.then((choice) => showChoice(choice, true)), 700);
     }
   }
   tick();
@@ -158,10 +181,10 @@ document.addEventListener("click", (e) => {
   const action = el?.dataset.action;
   if (action === "random") startRandom();
   if (action === "choose") show("choose");
-  if (action === "surprise") showSurprise();
+  if (action === "surprise") choose("surprise", null);
   if (action === "home") show("home");
   if (action === "info") showInfo(d);
-  if (action === "pick") showDestination(d, "choose", "Deine Wahl");
+  if (action === "pick") choose("choose", d);
   if (action === "close-info") infoDialog.close();
 });
 
@@ -171,3 +194,10 @@ infoDialog.addEventListener("click", (e) => {
 });
 
 renderCards();
+
+// Wurde schon gewählt, bleibt diese Auswahl angezeigt (bis sie unter /result zurückgesetzt wird)
+fetch("/api/choice", { cache: "no-store" })
+  .then((res) => res.json())
+  .then(({ choice }) => choice && showChoice(choice, false))
+  .catch(() => {})
+  .finally(() => document.body.classList.add("ready"));
